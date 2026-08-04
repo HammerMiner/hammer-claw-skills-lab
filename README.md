@@ -7,7 +7,7 @@
 
 ## What Is This?
 
-Hammer Claw Skills Lab is a community-driven repository of **Skills** — LLM-invokable packages that extend what your device can do. Each skill bundles a `SKILL.md` instruction file with optional Lua scripts, assets, and references. The device's built-in AI agent reads these skills and can execute them on demand.
+Hammer Claw Skills Lab is a community-driven repository of **Skills** — LUA scripte based UI framework, which could leverage AI to help you built custom UI pages. Each skill bundles a `SKILL.md` instruction file with optional Lua scripts, assets, and references. The device's built-in AI agent reads these skills and can execute them on demand.
 
 This project is derived from [espressif/esp-claw-skills-lab](https://github.com/espressif/esp-claw-skills-lab) (MIT), adapted for the Hammer hardware ecosystem.
 
@@ -114,16 +114,81 @@ Use this skill when the user asks to do the specific thing.
 
 ---
 
+## UI Design Guidelines
+
+Skills running on ESP32 devices should follow these design principles to ensure smooth performance and a clean visual experience on resource-constrained hardware.
+
+### Card-Based Layout
+
+- Use a **card-based design** to organize content into clear, self-contained blocks.
+- Each card should represent a single piece of information or a single interaction unit.
+- Maintain consistent spacing between cards and uniform padding within them.
+- Avoid deep nesting — keep the visual hierarchy flat and easy to scan.
+
+### No Animations
+
+- **Do not use animations.** ESP32 devices have limited CPU and memory; animations can cause frame drops and UI lag.
+- Prefer instant state transitions over animated effects.
+- Use color changes, borders, or text updates to indicate state changes instead of motion.
+
+### Color Palette
+
+- Keep colors **simple and clean**. Use a limited palette of 3–5 primary colors.
+- Prefer dark backgrounds with high-contrast foreground text for readability on LCD panels.
+- Suggested base palette:
+  - Background: `#1A1A2E` (dark navy)
+  - Card background: `#16213E` (deep blue)
+  - Primary accent: `#0F3460` (royal blue)
+  - Highlight: `#E94560` (coral red)
+  - Text: `#FFFFFF` / `#B0B0B0` (white / light gray)
+- Avoid gradients and complex shading — solid colors render faster and look cleaner on small displays.
+
+### Image Assets
+
+- Keep all image assets **under 200 KB** to reduce memory usage and load time.
+- Use compressed formats (PNG-8 where possible).
+- Preview screenshots (`preview.png`) should also stay under 200 KB.
+- Recommended preview dimensions: 360×640 px (portrait) or smaller.
+
+---
+
 ## How to Contribute
 
-### 1. Fork & Clone
+### 1. Fork the Repository
+
+Go to [github.com/HammerMiner/hammer-claw-skills-lab](https://github.com/HammerMiner/hammer-claw-skills-lab) and click the **Fork** button in the top-right corner. This creates your own copy under your GitHub account, e.g. `https://github.com/YOUR_USERNAME/hammer-claw-skills-lab`.
+
+### 2. Clone Your Fork
 
 ```bash
 git clone https://github.com/YOUR_USERNAME/hammer-claw-skills-lab.git
 cd hammer-claw-skills-lab
 ```
 
-### 2. Create Your Skill
+### 3. Add the Upstream Remote
+
+Add the original repository as `upstream` so you can sync the latest changes later:
+
+```bash
+git remote add upstream https://github.com/HammerMiner/hammer-claw-skills-lab.git
+```
+
+Verify your remotes:
+
+```bash
+git remote -v
+```
+
+You should see:
+
+```
+origin    https://github.com/YOUR_USERNAME/hammer-claw-skills-lab.git (fetch)
+origin    https://github.com/YOUR_USERNAME/hammer-claw-skills-lab.git (push)
+upstream  https://github.com/HammerMiner/hammer-claw-skills-lab.git (fetch)
+upstream  https://github.com/HammerMiner/hammer-claw-skills-lab.git (push)
+```
+
+### 4. Create Your Skill
 
 ```bash
 mkdir -p skills/my_skill/scripts
@@ -131,7 +196,7 @@ mkdir -p skills/my_skill/scripts
 
 Write `skills/my_skill/SKILL.md` following the format above. Add any Lua scripts to `scripts/`.
 
-### 3. Validate
+### 5. Validate
 
 ```bash
 pnpm install
@@ -140,11 +205,62 @@ pnpm validate-skills
 
 This checks that all `SKILL.md` files have correct frontmatter, valid categories, matching directory names, and proper formatting.
 
-### 4. Submit a Pull Request
+### 6. Test on the Simulator
 
-Push your branch and open a PR against `main`. A maintainer will review your submission. Once merged, your skill becomes available to all devices.
+Before submitting a pull request, verify your skill on the HammerMiner online simulator:
 
-### 5. Custom Page Sharing
+**[https://www.hammerminer.com/#/bc08-simulator](https://www.hammerminer.com/#/bc08-simulator)**
+
+Upload your Lua script to the simulator and confirm that:
+
+- The UI renders correctly on the simulated 720×1280 LCD.
+- Touch interactions respond as expected.
+- No runtime errors or crashes occur.
+- The layout follows the [UI Design Guidelines](#ui-design-guidelines) above.
+
+### 7. Create a Branch and Commit
+
+```bash
+git checkout -b add-my-skill
+git add skills/my_skill/
+git commit -m "Add my_skill skill"
+```
+
+### 8. Push to Your Fork
+
+```bash
+git push origin add-my-skill
+```
+
+### 9. Submit a Pull Request
+
+Open your fork on GitHub:
+
+```
+https://github.com/YOUR_USERNAME/hammer-claw-skills-lab
+```
+
+GitHub will show a **"Compare & pull request"** banner. Click it and make sure the PR targets:
+
+- **base repository**: `HammerMiner/hammer-claw-skills-lab`
+- **base branch**: `main`
+- **head repository**: `YOUR_USERNAME/hammer-claw-skills-lab`
+- **compare branch**: `add-my-skill`
+
+Add a clear title and description, then submit. A maintainer will review your submission. Once merged, your skill becomes available to all devices.
+
+### 10. Sync Your Fork Later
+
+Before starting your next contribution, sync your fork with the latest upstream changes:
+
+```bash
+git fetch upstream
+git checkout main
+git merge upstream/main
+git push origin main
+```
+
+### 11. Custom Page Sharing
 
 Have a custom Lua page you built for your device? You can share it:
 
@@ -152,36 +268,7 @@ Have a custom Lua page you built for your device? You can share it:
 2. Add `"category": ["utility"]` (or appropriate category)
 3. Submit via PR as above
 
-After review and merge, other users can install it from the marketplace.
-
----
-
-## For Device Firmware Developers
-
-### Integrating the Skills Lab
-
-Your device firmware needs:
-
-1. **`skills_lab_downloader` skill** — tells the LLM how to fetch from the marketplace. The download URL is:
-
-   ```
-   https://raw.githubusercontent.com/HammerMiner/hammer-claw-skills-lab/main/skills/<skill_id>/SKILL.md
-   ```
-
-2. **HTTP allowlist** — ensure your device allows outbound requests to:
-   - `raw.githubusercontent.com`
-   - `skills-lab.hammerminer.com` (web frontend, optional)
-
-3. **`skills-data.json`** — generated by `pnpm build` in this repo. Embed it in firmware for the on-device marketplace page.
-
-### Compatibility Check
-
-When installing a skill, the device should:
-
-1. Fetch `_metadata.json` from the skill directory
-2. Compare `metadata.devices` against the device model
-3. Compare `metadata.peripherals` against available hardware
-4. Warn the user if conflicts exist, allow force-install
+After review and merge, and necessary testing on backend,other users can install it from the marketplace.
 
 ---
 
@@ -190,47 +277,11 @@ When installing a skill, the device should:
 ```
 hammer-claw-skills-lab/
 ├── README.md                     # This file
-├── LICENSE                       # MIT
+├── scripts/                      # Build and validation scripts
+│   └── generate_catalog.py       # Generates dist/skills-catalog.json
 ├── skills/                       # All shared skills
-│   ├── flappybird/               # Game
-│   ├── current_weather/          # Weather
-│   ├── miner_dashboard/          # Mining dashboard
-│   └── ...
-├── build/                        # Vite plugin for skill metadata generation
-│   └── vite-plugin-skills.ts
-├── scripts/                      # CI validation
-│   └── validate-skills.ts
-├── src/                          # Web frontend (Vue 3)
-│   ├── config/
-│   │   └── allowlist.ts          # Category/peripheral/device definitions
-│   └── ...
-├── package.json
-└── .github/workflows/            # CI: validate on every push
-```
-
----
-
-## Local Development
-
-```bash
-# Requirements
-node >= 22.12.0
-pnpm >= 11.0
-
-# Install dependencies
-pnpm install
-
-# Start dev server
-pnpm dev
-
-# Validate all skills
-pnpm validate-skills
-
-# Production build
-pnpm build
-# → dist/            Static web frontend
-# → dist/raw/        Raw skill files (direct device downloads)
-# → src/generated/   skills-data.json + tags.json
+│   └── game_minesweeper/         # Minesweeper game
+└── ...                           # Additional project files
 ```
 
 ---
