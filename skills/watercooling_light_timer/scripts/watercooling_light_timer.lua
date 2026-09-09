@@ -6,7 +6,7 @@
 --       Aqua Core neon UI, image-based digital display, English text.
 -- ================================================================
 
-local PAGE = 1
+local PAGE = 10
 local W, H = claw.display.get_size()
 local PAD = 24
 local GAP = 16
