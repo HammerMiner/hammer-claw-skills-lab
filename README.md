@@ -29,6 +29,9 @@ The device will automatically fetch metadata, check hardware compatibility, down
 
 ### For Developers: Create a Skill
 
+> 💡 **Need to access internal data or control hardware?**  
+> Check out the complete **[BC08 Skill API Reference](API_REFERENCE.md)** to learn how to query real-time hashrate, temperatures, power, fan RPM, display on the LCD (`claw.display`), and control hardware directly from your Lua scripts!
+
 A skill is a directory under `skills/` containing at minimum a `SKILL.md` file:
 
 ```
@@ -281,7 +284,9 @@ hammer-claw-skills-lab/
 │   └── generate_catalog.py       # Generates dist/skills-catalog.json
 ├── skills/                       # All shared skills
 │   ├── game_minesweeper/         # Minesweeper game
-│   └── miner_dashboard/          # Bitcoin miner dashboard
+│   ├── miner_dashboard/          # Bitcoin miner dashboard
+│   └── watercooling_light_timer/ # Water cooling light & timer
+├── API_REFERENCE.md              # Complete BC08 telemetry & hardware control API reference
 ├── bc08_lua_api_reference.md     # Lua API reference for BC08 device
 ├── bc08_lua_sandbox_design.md    # Lua sandbox design for BC08 device
 ```
