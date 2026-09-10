@@ -47,25 +47,55 @@ local ICONS = {
     gear = ASSET_DIR .. "gear.png",
 }
 
--- Dashboard data. Defaults are shown for fields with no API source.
+-- Dashboard data.
+--   ip / time / hashrate / btc_price / network — live system APIs (see refreshers below)
+--   temp / pool / worker / pass / mode / freq / volt / os — no system API exists,
+--   read from the on-device config file (CONFIG_FILE) so nothing is hardcoded here.
 local DATA = {
     ip = net.get_local_ip(),
     time = "--:--",
-    hashrate = "6.81",
+    hashrate = "--",
     hashrate_unit = "TH/s",
-    temp = "71.5",
-    btc_price = "64211",
+    temp = "--",
+    btc_price = "--",
     btc_unit = "USD",
-    network = "957552",
-    network_unit = "sat",
-    pool = "btc.zsolo.bid",
-    worker = "1NjHG...uz6fm",
-    pass = ".BC04",
-    mode = "Normal",
-    freq = "750 MHz",
-    volt = "4800 mV",
-    os = "Thor OS  1.0.0",
+    network = "--",
+    network_unit = "blocks",
+    pool = "--",
+    worker = "--",
+    pass = "--",
+    mode = "--",
+    freq = "--",
+    volt = "--",
+    os = "--",
 }
+
+-- On-device config for fields without a system API. JSON object, e.g.
+-- {"temp":"71.5","pool":"btc.zsolo.bid","worker":"1NjHG...uz6fm","pass":".BC04",
+--  "mode":"Normal","freq":"750 MHz","volt":"4800 mV","os":"Thor OS 1.0.0"}
+local CONFIG_FILE = storage.join_path(storage.get_root_dir(), "skills", "miner_dashboard", "config.json")
+local CONFIG_KEYS = { "temp", "pool", "worker", "pass", "mode", "freq", "volt", "os" }
+
+local function load_config()
+    local ok, exists = pcall(storage.exists, CONFIG_FILE)
+    if not ok or not exists then
+        sys.log("warn", "config not found: " .. CONFIG_FILE)
+        return
+    end
+    local ok_read, content = pcall(storage.read_file, CONFIG_FILE)
+    if not ok_read or not content then
+        sys.log("warn", "config read failed")
+        return
+    end
+    local cfg = net.parse_json(content)
+    if type(cfg) ~= "table" then
+        sys.log("warn", "config is not valid JSON")
+        return
+    end
+    for _, k in ipairs(CONFIG_KEYS) do
+        if cfg[k] ~= nil then DATA[k] = tostring(cfg[k]) end
+    end
+end
 
 -- ── Helpers ──
 local function draw_card(x, y, w, h, border_clr, id)
@@ -169,14 +199,11 @@ local function update_time()
 end
 
 local function fetch_btc_price()
-    net.get("/api/coingecko/simple/price?ids=bitcoin&vs_currencies=usd", {}, function(status, body, headers)
-        if status ~= 200 then
-            sys.log("warn", "BTC price fetch failed: " .. tostring(status))
-            return
-        end
-        local data = net.parse_json(body)
-        if data and data.bitcoin and data.bitcoin.usd then
-            DATA.btc_price = tostring(math.floor(data.bitcoin.usd))
+    net.get_coin_price("BTC", function(price)
+        if price and price.usd then
+            DATA.btc_price = tostring(math.floor(price.usd))
+        else
+            sys.log("warn", "BTC price fetch failed")
         end
     end)
 end
