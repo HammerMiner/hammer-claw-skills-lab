@@ -6,7 +6,7 @@
 --       Aqua Core neon UI, image-based digital display, English text.
 -- ================================================================
 
-local PAGE = 1
+local PAGE = 10
 local W, H = claw.display.get_size()
 local PAD = 24
 local GAP = 16
@@ -68,8 +68,9 @@ local DIGIT_H = 78
 local COLON_W = 26
 local TIME_W = 6 * DIGIT_W + 2 * COLON_W
 
--- State file for timer persistence
-local STATE_FILE = "skills/watercooling_light_timer/state.json"
+-- State file for timer persistence (absolute path from storage root,
+-- same pattern as game_minesweeper — relative paths may fail on device)
+local STATE_FILE = storage.join_path(storage.get_root_dir(), "skills", "watercooling_light_timer", "state.json")
 
 -- Application state
 local ctx = {
@@ -300,7 +301,7 @@ local function draw_status_card()
     for i, c in ipairs(COLORS) do
         local dx = PAD + 24 + (i - 1) * dot_gap
         if i == ctx.rgb_index then
-            draw_container(dx - 6, y + 104 - 6, dot_size + 12, dot_size + 12, CYAN, (dot_size + 12) // 2, 110 + i)
+            draw_container(dx - 6, y + 104 - 6, dot_size + 12, dot_size + 12, CYAN, math.floor((dot_size + 12) / 2), 110 + i)
         end
         -- clickable area behind the dot image
         claw.display.button(PAGE, 20 + i, dx, y + 104, dot_size, dot_size, "", CARD_BG)
@@ -638,7 +639,7 @@ sys.log("info", "aqua core timer app ready, timezone=" .. timezone_label)
 
 while true do
     local p, obj = claw.display.pop_event()
-    if p then
+    if p == PAGE and obj then
         handle_touch(obj)
     end
 
