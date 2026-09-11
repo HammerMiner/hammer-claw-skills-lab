@@ -45,12 +45,13 @@ def sha256_dir(directory: Path) -> str:
 
 
 def list_files(directory: Path) -> list[str]:
-    """Return relative file paths in a directory."""
+    """Return relative file paths in a directory (always POSIX slashes)."""
     return sorted(
-        str(f.relative_to(directory))
+        f.relative_to(directory).as_posix()
         for f in directory.rglob("*")
         if f.is_file()
     )
+
 
 
 def total_size(directory: Path) -> int:
