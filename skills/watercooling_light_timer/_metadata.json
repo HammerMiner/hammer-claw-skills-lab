@@ -1,0 +1,31 @@
+{
+  "extra_files": {
+    "assets": [
+      "btn_minus.png",
+      "btn_plus.png",
+      "chevron_down.png",
+      "chevron_up.png",
+      "digit_0.png",
+      "digit_1.png",
+      "digit_2.png",
+      "digit_3.png",
+      "digit_4.png",
+      "digit_5.png",
+      "digit_6.png",
+      "digit_7.png",
+      "digit_8.png",
+      "digit_9.png",
+      "digit_colon.png",
+      "power_btn.png",
+      "preset_active.png",
+      "preset_inactive.png",
+      "ring_bg.png",
+      "start_btn.png",
+      "stop_btn.png",
+      "title_aqua_core.png"
+    ],
+    "scripts": [
+      "watercooling_light_timer.lua"
+    ]
+  }
+}

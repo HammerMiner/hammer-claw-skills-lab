@@ -19,6 +19,7 @@ OUTPUT_DIR = ROOT / "dist"
 OUTPUT_FILE = OUTPUT_DIR / "skills-catalog.json"
 
 SKILL_MD = "SKILL.md"
+METADATA_JSON = "_metadata.json"
 FRONTMATTER_RE = re.compile(r"\A---\s*\n(?P<meta>\{.*?\})\s*\n---", re.DOTALL)
 H1_RE = re.compile(r"^#\s+(.+)$", re.MULTILINE)
 
@@ -63,7 +64,7 @@ def total_size(directory: Path) -> int:
     )
 
 
-GITHUB_RAW_BASE = "https://raw.githubusercontent.com/HammerMiner/hammer-claw-skills-lab/main"
+GITHUB_RAW_BASE = "https://raw.githubusercontent.com/EdwinSong/hammer-claw-skills-lab/main"
 PREVIEW_FILENAME = "preview.png"
 
 
@@ -103,8 +104,18 @@ def main():
 
         preview = preview_url(skill_dir.name)
 
+        # Write _metadata.json for the on-device downloader (skills_lab_downloader):
+        # it fetches SKILL.md + _metadata.json, then every extra_files entry.
+        # Written before the size/hash scan so the catalog matches the final tree.
+        extra_files = build_extra_files(skill_dir)
+        (skill_dir / METADATA_JSON).write_text(
+            json.dumps({"extra_files": extra_files}, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
+
         entry = {
             "id": skill_id,
+            "dir": skill_dir.name,       # on-disk directory name (may differ from id)
             "title": title,
             "description": meta.get("description", ""),
             "author": meta.get("author", ""),
@@ -122,7 +133,7 @@ def main():
 
     catalog = {
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "repo": "HammerMiner/hammer-claw-skills-lab",
+        "repo": "EdwinSong/hammer-claw-skills-lab",
         "total": len(skills),
         "skills": skills,
     }

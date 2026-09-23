@@ -1,23 +1,23 @@
 ---
 {
   "name": "watercooling_light_timer",
-  "description": "Schedule the BC08-P4 water-cooling RGB LED to turn off after a delay (minutes or hours) or at a specific clock time. Supports state persistence and shows current timezone. Invoke when the user asks for LED timer, schedule light off, water-cooling RGB shutdown, or turn off the light after a delay.",
+  "description": "Schedule the BC08-P4 water-cooling RGB LED to turn off after a delay (minutes or hours) or at a specific clock time. Shows current timezone. Invoke when the user asks for LED timer, schedule light off, water-cooling RGB shutdown, or turn off the light after a delay.",
   "author": "HammerMiner",
   "metadata": {
     "category": [
       "utility",
-      "hardware"
+      "rgb"
     ],
     "tags": [
       "watercooling",
       "rgb",
-      "led",
       "timer",
       "schedule",
       "timezone"
     ],
     "peripherals": [
-      "led"
+      "display",
+      "argb_led"
     ],
     "cap_groups": [
       "cap_lua"
@@ -30,7 +30,7 @@
 }
 ---
 
-# Water-cooling Light Timer
+# Hydro Light Control
 
 Use this skill when the user wants to automatically turn off the water-cooling RGB LED after a delay or at a specific time.
 
@@ -47,14 +47,12 @@ Pass an empty `args` object for defaults.
 
 ## Behavior
 
-- Supports two modes: **Delay** and **Clock**.
-- **Delay mode**: enter a number and choose the unit (**Minutes** or **Hours**). Use the **-** / **+** buttons to adjust the value.
-- **Clock mode**: set a target clock time (e.g. 21:00). The skill automatically rolls over to the next day if the time has already passed.
-- Displays the current timezone offset (e.g. `UTC+08:00`) on the top bar.
-- Persists the active timer state to `skills/watercooling_light_timer/state.json`.
-- On launch, restores an unfinished timer if the deadline has not been reached.
-- Calls `claw.rgb.off()` when the deadline is reached and clears the persisted state.
-- The user can press **Cancel** at any time to abort the timer.
+- Supports two modes: **Timer** (countdown) and **Schedule** (clock time).
+- **Timer mode**: pick a preset (**15 min** / **30 min** / **1 hour** / **2 hours**) or adjust the value with the **-** / **+** buttons (1–999, minutes or hours).
+- **Schedule mode**: wheel pickers set the target clock time (hour 0–23, minute 0–59) via the chevron buttons. The skill automatically rolls over to the next day if the time has already passed, and shows a live `HH:MM:SS` countdown below the summary while the timer is running.
+- The power button toggles the ARGB LED immediately via `capability.call("miner_set_led_mode", { on = ... })`; the default LED color is applied via `capability.call("miner_set_led_color", { r, g, b })`.
+- Displays the current timezone offset (e.g. `UTC+08:00`) on the top bar, derived from `system.time()` and `system.date()`.
+- The user can press **Stop Timer** at any time to abort; switching modes or picking a preset also cancels the active timer.
 
 ## Files
 
